@@ -4,6 +4,9 @@ const multer = require("multer");
 const upload = multer();
 const { registerValidation, loginValidation } = require("../validation");
 const bcrypt = require("bcryptjs/dist/bcrypt");
+
+//CREATE TOKEN
+const jsonToken = require("jsonwebtoken");
 router.post("/register", upload.none(), async function (req, res, next) {
   const { name, email, password } = req.body;
 
@@ -53,13 +56,13 @@ router.post("/login", upload.none(), async (req, res) => {
   } else {
     const validPass = await bcrypt.compare(password, user.password);
     if (validPass) {
-      return res.status(200).send("Logged In");
+      const token = jsonToken.sign({_id:user._id},process.env.TOKEN_SECRET);
+      res.header('auth-token',token).send(token);
+      // return res.status(200).send("Logged In");
     } else {
       return res.status(200).send("Invalid Password");
     }
   }
-
-  return res.status(200).send(user);
 });
 
 module.exports = router;
